@@ -1,4 +1,5 @@
 # TODO: error handling on all functions
+# TODO: change all stored class attributes to their correct type instead of all being of type str
 # ------------------------------------------------------------------------------ #
 from flask import Flask, request, session, json, jsonify, make_response
 import jsonpickle
