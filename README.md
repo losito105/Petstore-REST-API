@@ -19,6 +19,28 @@ This API uses a static data source so there is no need to connect to an external
 I would recommend installing the Chrome Extension "Advanced REST Client" to test or use this API.
 This tool allows you to manually change the HTTP request method you are using, as well as manually
 input a JSON request body and URL parameters. 
+
+<h3>Sample Request:</h3>
+<pre>
+1. Within Advanced REST Client, select HTTP POST request method.
+2. Add a request body with body content type "application/json" and switch the Editor view to "Raw input".
+3. Paste the following in the text box below:
+{
+  "id": 10,
+  "username": "theUser",
+  "firstName": "John",
+  "lastName": "James",
+  "email": "john@email.com",
+  "password": "12345",
+  "phone": "12345",
+  "userStatus": 1
+}
+4. In your terminal, copy the URL following the words "Running on:" and paste it into the "Request URL" section of the Advanced REST Client.
+5. Concatenate "/user" onto the end of this URL.
+6. Click send and at the bottom of the Advanced REST Client, you should see a JSON response indicating that a new user was successfully created.
+7. From here, you may want to log this user in/out, update their info, or delete them. You can also create multiple users at once. 
+(See https://petstore3.swagger.io/ for instructions on how to complete steps 6 and 7.)
+</pre>
   
 <h2>Reference:</h2>
   
