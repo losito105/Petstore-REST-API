@@ -1,6 +1,6 @@
 # Petstore-REST-API
 
-Setup:
+<h2>Setup:</h2>
 
 This API requires Flask and its dependencies to run. For information regarding Flask and/or dependency installation, see:
 https://flask.palletsprojects.com/en/1.1.x/installation/#installation 
@@ -15,13 +15,13 @@ Now just run "flask run" and the API should start up.
   
 This API uses a static data source so there is no need to connect to an external database.
   
-Testing / Use:
+<h2>Testing / Use:</h2>
 
 I would recommend installing the Chrome Extension "Advanced REST Client" to test or use this API.
 This tool allows you to manually change the HTTP request method you are using, as well as manually
 input a JSON request body and URL parameters. 
   
-Reference:
+<h2>Reference:</h2>
   
 This API is an implementation of the Swagger Petstore - OpenAPI 3.0.
 For information regarding JSON body input format, expected JSON response format, Petstore API methods see:
