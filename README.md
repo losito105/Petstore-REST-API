@@ -13,8 +13,6 @@ If you would like to run the API in debug mode, run the command
 <pre>export FLASK_ENV=development</pre>
 Now just run <pre>flask run</pre> and the API should start up.
   
-This API uses a static data source so there is no need to connect to an external database.
-  
 <h2>Testing / Use:</h2>
 
 I would recommend installing the Chrome Extension "Advanced REST Client" to test or use this API.
