@@ -1,64 +1,49 @@
-# TODO: error handling on all functions
-# TODO: change all stored class attributes to their correct type instead of all being of type str
 # ------------------------------------------------------------------------------ #
-from flask import Flask, request, session, json, jsonify, make_response
+from flask import Flask, request, abort
 import jsonpickle
 app = Flask(__name__)
-# used for sessions, generated using:
-# python -c 'import os; print(os.urandom(16))'
-app.secret_key = '??\9-?_YL?0q'
 # ------------------------------------------------------------------------------ #
 class Address:
     def __init__(self, street, city, state, zip):
-        self.street = street
-        self.city = city
-        self.state = state
-        self.zip = zip
-
-class Category:
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
+        self.street = str(street)
+        self.city = str(city)
+        self.state = str(state)
+        self.zip = str(zip)
 
 class Customer:
     def __init__(self, id, username, address):
-        self.id = id
-        self.username = username
-        self.address = address
+        self.id = int(id)
+        self.username = str(username)
+        self.address = address # instance of class Address
 
 class Order:
     def __init__(self, id, petId, quantity, shipDate, status, complete):
-        self.id = id
-        self.petId = petId
-        self.quantity = quantity
-        self.shipDate = shipDate
-        self.status = status
-        self.complete = complete
+        self.id = int(id)
+        self.petId = int(petId)
+        self.quantity = int(quantity)
+        self.shipDate = str(shipDate)
+        self.status = str(status)
+        self.complete = bool(complete)
 
 class Pet:
     def __init__(self, id, name, category, photoUrls, tags, status):
-        self.id = id
-        self.name = name
-        self.category = category
-        self.photoUrls = photoUrls
-        self.tags = tags
-        self.status = status
-
-class Tag:
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
+        self.id = int(id)
+        self.name = str(name)
+        self.category = str(category)
+        self.photoUrls = photoUrls # list of strings
+        self.tags = tags # list of strings
+        self.status = str(status)
 
 class User:
     def __init__(self, id, username, firstName, lastName, email, password, phone, userStatus):
-        self.id = id
-        self.username = username
-        self.firstName = firstName
-        self.lastName = lastName
-        self.email = email
-        self.password = password
-        self.phone = phone
-        self.userStatus = userStatus
+        self.id = int(id)
+        self.username = str(username)
+        self.firstName = str(firstName)
+        self.lastName = str(lastName)
+        self.email = str(email)
+        self.password = str(password)
+        self.phone = str(phone)
+        self.userStatus = int(userStatus)
 # ------------------------------------------------------------------------------ #
 # static storage dictionaries (not connecting to a database)
 # key: unique id, value: object instance
@@ -66,24 +51,26 @@ _orders = {}
 _pets = {}
 # key: unique username, value: object instance
 _users = {}
-# user that is currently signed into a session
+# user that is currently signed in
 global _current_user
 _current_user = 'nobody'
 # used to parse stored class data in JSON response
 p = jsonpickle.Pickler()
+# status enums for error checking
+_pet_status_enum = ['available', 'pending', 'sold']
+_order_status_enum = ['placed', 'approved', 'delivered']
 # ------------------------------------------------------------------------------ #
-# NOTE: URL formatting: http://127.0.0.1:5000/[route_path]?arg1=val1&arg2=val2 ...
-# TODO: return JSON not str
-# TODO: accept JSON input not just args in URL
 @app.route('/pet', methods=['PUT', 'POST'])
 def update_pet():
-    id = request.args.get('id')
-    name = request.args.get('name')
-    category = request.args.get('category')
-    photoUrls = request.args.get('photoUrls').split(',') # required
-    # NOTE: separate tag args by commas in URL
-    tags = request.args.get('tags').split(',') # required
-    status = request.args.get('status')
+    pet_info = request.get_json()
+    id = pet_info['id']
+    name = pet_info['name']
+    category = pet_info['category']
+    photoUrls = pet_info['photoUrls']
+    tags = pet_info['tags']
+    status = pet_info['status']
+    if photoUrls == None or tags == None or id < 0 or status not in _pet_status_enum:
+        abort(405)
     # _pets dictionary functions as desired without consideration of HTTP request method
     new_pet = Pet(id, name, category, photoUrls, tags, status)
     _pets[id] = new_pet
@@ -92,6 +79,9 @@ def update_pet():
 @app.route('/pet/findByStatus', methods=['GET'])
 def find_by_status():
     status = request.args.get('status')
+    if status not in _pet_status_enum:
+        abort(400)
+
     status_matches = []
     for pet in _pets.values():
         if pet.status == status:
@@ -100,6 +90,7 @@ def find_by_status():
 
 @app.route('/pet/findByTags', methods=['GET'])
 def find_by_tags():
+    # considering all tags valid
     tags = request.args.get('tags').split(',')
     tag_matches = []
     for tag in tags:
@@ -112,15 +103,20 @@ def find_by_tags():
 def update_pet_by_id(petId):
     name = request.args.get('name')
     status = request.args.get('status')
+    petId_num = int(petId) # quick fix, not ideal
+    if petId_num < 0:
+        abort(400)
+    elif petId_num not in _pets:
+        abort(404)
     # find pet by id
     if request.method == 'GET':
-        pet = _pets[petId]
+        pet = _pets[petId_num]
         return str(p.flatten(pet))
     # updates a pet in the store with form data
     elif request.method == 'POST':
-        _pets[petId].name = name
-        _pets[petId].status = status
-        return str(p.flatten(_pets[petId]))
+        _pets[petId_num].name = name
+        _pets[petId_num].status = status
+        return str(p.flatten(_pets[petId_num]))
     # deletes a pet
     else:
         _pets.pop(petId)
@@ -133,7 +129,7 @@ def upload_image(petId, uploadImage):
 # ------------------------------------------------------------------------------ #
 @app.route('/store/inventory', methods=['GET'])
 def inventory():
-    # _statuses = ['available', 'pending', 'sold']
+    # NOTE: this should be global for efficiency
     status_dict = {}
     status_dict['available'] = 0
     status_dict['pending'] = 0
@@ -144,12 +140,17 @@ def inventory():
 
 @app.route('/store/order', methods=['POST'])
 def order():
-    id = request.args.get('id')
-    petId = request.args.get('petId')
-    quantity = request.args.get('quantity')
-    shipDate = request.args.get('shipDate')
-    status = request.args.get('status')
-    complete = request.args.get('complete')
+    order_info = request.get_json()
+    id = order_info['id']
+    petId = order_info['petId']
+    quantity = order_info['quantity']
+    shipDate = order_info['shipDate']
+    status = order_info['status']
+    complete = order_info['complete']
+    if id < 0 or petId < 0 or quantity <= 0 or status not in _order_status_enum:
+        abort(405)
+    elif complete != 'True' and complete != 'False':
+        abort(405)
 
     new_order = Order(id, petId, quantity, shipDate, status, complete)
     _orders[id] = new_order
@@ -157,9 +158,13 @@ def order():
 
 @app.route('/store/order/<orderId>', methods=['GET', 'DELETE'])
 def order_by_id(orderId):
+    if orderId < 0 or orderId > 1000: # see Swagger Petstore docs
+        abort(400)
+    order = _orders[orderId]
+    if order == None:
+        abort(404)
     # find purchase order by id
     if request.method == 'GET':
-        order = _orders[orderId]
         return str(p.flatten(order))
     # delete purchase order by id
     else:
@@ -168,22 +173,40 @@ def order_by_id(orderId):
 # ------------------------------------------------------------------------------ #
 @app.route('/user', methods=['POST'])
 def create_user():
-    id = request.args.get('id')
-    username = request.args.get('username')
-    firstName = request.args.get('firstName')
-    lastName = request.args.get('lastName')
-    email = request.args.get('email')
-    password = request.args.get('password')
-    phone = request.args.get('phone')
-    userStatus = request.args.get('userStatus')
+    user_info = request.get_json()
+    id = user_info['id']
+    username = user_info['username']
+    firstName = user_info['firstName']
+    lastName = user_info['lastName']
+    email = user_info['email']
+    password = user_info['password']
+    phone = user_info['phone']
+    userStatus = user_info['userStatus']
+    if id < 0:
+        abort(400)
 
     new_user = User(id, username, firstName, lastName, email, password, phone, userStatus)
     _users[username] = new_user
     return str(p.flatten(new_user))
 
-# TODO: implement
-# @app.route('/user/createWithList', methods=['POST'])
-# def create_with_list(user_arr):
+@app.route('/user/createWithList', methods=['POST'])
+def create_with_list():
+    user_lst = request.get_json()
+    for user in user_lst:
+        id = user['id']
+        username = user['username']
+        firstName = user['firstName']
+        lastName = user['lastName']
+        email = user['email']
+        password = user['password']
+        phone = user['phone']
+        userStatus = user['userStatus']
+        if id < 0:
+            abort(400)
+
+        new_user = User(id, username, firstName, lastName, email, password, phone, userStatus)
+        _users[username] = new_user
+    return str(p.flatten(user_lst))
 
 @app.route('/user/login', methods=['GET'])
 def login():
@@ -193,7 +216,8 @@ def login():
     if username in _users and _users[username].password == password:
         _current_user = username
         return username + ' was successfully logged in.'
-    return 'Login failed. Check credentials and try again.'
+    else:
+        abort(400) # bad credentials
 
 @app.route('/user/logout', methods=['GET'])
 def logout():
@@ -207,20 +231,27 @@ def logout():
 @app.route('/user/<username>', methods=['GET', 'PUT', 'DELETE'])
 def update_user(username):
     global _current_user
-    id = request.args.get('id')
-    firstName = request.args.get('firstName')
-    lastName = request.args.get('lastName')
-    email = request.args.get('email')
-    password = request.args.get('password')
-    phone = request.args.get('phone')
-    userStatus = request.args.get('userStatus')
+    user = _users[username]
+    if user == None:
+        abort(404)
 
     # get user by user name
     if request.method == 'GET':
-        user = _users[username]
         return str(p.flatten(user))
     # update user
     elif request.method == 'PUT':
+        # NOTE: username can not be changed because of the way the database is set up
+        user_info = request.get_json()
+        id = user_info['id']
+        firstName = user_info['firstName']
+        lastName = user_info['lastName']
+        email = user_info['email']
+        password = user_info['password']
+        phone = user_info['phone']
+        userStatus = user_info['userStatus']
+        if id < 0:
+            abort(400)
+
         if _current_user == username:
             _users[username] = User(id, username, firstName, lastName, email, password, phone, userStatus)
             return str(p.flatten(_users[username]))
