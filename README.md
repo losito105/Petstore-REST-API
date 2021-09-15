@@ -23,7 +23,7 @@ input a JSON request body and URL parameters.
 <h2>Reference:</h2>
   
 This API is an implementation of the Swagger Petstore - OpenAPI 3.0.
-For information regarding JSON body input format, expected JSON response format, Petstore API methods see:
+For information regarding JSON body input format, expected JSON response format, and Petstore API methods see:
 https://petstore3.swagger.io/
   
 While this is an implementation of the Petstore API, some implementation details may vary.
