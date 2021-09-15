@@ -7,7 +7,6 @@ https://flask.palletsprojects.com/en/1.1.x/installation/#installation
 
 Once you have Flask and the required dependencies installed, clone this repo to get the "api.py" source file.
 Using your terminal, redirect into the cloned project directory. 
-This can be done using the command "cd <absolute-path-to-project-directory>"
 
 Once you are in the project directory, run the command "export FLASK_APP=api.py"
 If you would like to run the API in debug mode, run the command "export FLASK_ENV=development"
