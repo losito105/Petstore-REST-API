@@ -36,7 +36,7 @@ input a JSON request body and URL parameters.
     }
 4. In your terminal, copy the URL following the words "Running on:" and paste it into the "Request URL" section of the Advanced REST Client.
 5. Concatenate "/user" onto the end of this URL.
-6. Click send and at the bottom of the Advanced REST Client, you should see a JSON response indicating that a new user was successfully created.
+6. Click "Send" and at the bottom of the Advanced REST Client, you should see a JSON response indicating that a new user was successfully created.
 7. From here, you may want to log this user in/out, update their info, or delete them. You can also create multiple users at once. 
 (See https://petstore3.swagger.io/ for instructions on how to complete steps 6 and 7.)
 </pre>
