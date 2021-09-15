@@ -5,12 +5,13 @@
 This API requires Flask and its dependencies to run. For information regarding Flask and/or dependency installation, see:
 https://flask.palletsprojects.com/en/1.1.x/installation/#installation 
 
-Once you have Flask and the required dependencies installed, clone this repo to get the "api.py" source file.
+Once you have Flask and the required dependencies installed, clone this repo to get the <pre>api.py</pre>source file.
 Using your terminal, redirect into the cloned project directory. 
 
-Once you are in the project directory, run the command "export FLASK_APP=api.py"
-If you would like to run the API in debug mode, run the command "export FLASK_ENV=development"
-Now just run "flask run" and the API should start up.
+Once you are in the project directory, run the command <pre>export FLASK_APP=api.py</pre>
+If you would like to run the API in debug mode, run the command 
+<pre>export FLASK_ENV=development</pre>
+Now just run <pre>flask run</pre> and the API should start up.
   
 This API uses a static data source so there is no need to connect to an external database.
   
